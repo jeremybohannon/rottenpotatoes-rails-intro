@@ -8,24 +8,20 @@ class MoviesController < ApplicationController
 
   def index
     @all_ratings=Movie.ratings
-     @filters ||=@all_ratings
-     
-    if params[:ratings].respond_to?(:keys)
-      @filters=params[:ratings].keys
-      return @movies=Movie.where(rating: @filters) 
+    session[:ratings] = if params[:ratings].respond_to?(:keys)
+        params[:ratings].keys
+      else
+        if session[:ratings].nil? 
+          @all_ratings
+        else
+          session[:ratings] 
+        end
     end
     
-    case params[:order]
-        when "title"
-          session[:sorted_by]=params[:order]
-          @movies = Movie.order(:title)
-        when "release_date"
-          session[:sorted_by]=params[:order]
-          @movies = Movie.order(:release_date)
-        else
-          session[:sorted_by]=nil
-          @movies = Movie.all
+    if params[:order]
+      session[:sorted_by]=params[:order] 
     end
+    @movies = Movie.movies(session[:sorted_by],session[:ratings])
   end
 
   def create

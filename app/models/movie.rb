@@ -4,4 +4,8 @@ class Movie < ActiveRecord::Base
             movie.rating            
         end
     end
+    
+    def Movie.movies(sorted_by,ratings)
+        Movie.where(rating: ratings).order(sorted_by)
+    end
 end
