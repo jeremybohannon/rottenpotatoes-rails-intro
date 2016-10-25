@@ -7,6 +7,14 @@ class MoviesController < ApplicationController
   end
 
   def index
+    @all_ratings=Movie.ratings
+     @filters ||=@all_ratings
+     
+    if params[:ratings].respond_to?(:keys)
+      @filters=params[:ratings].keys
+      return @movies=Movie.where(rating: @filters) 
+    end
+    
     case params[:order]
         when "title"
           session[:sorted_by]=params[:order]
