@@ -3,12 +3,10 @@
 
 %table#movies
   %thead
-    %tr
-      %th{:class => ("hilite" if @id == 'title')}
-        %a#title_header{:href => movies_path + '/sort/title'} Movie Title
+    %tr 
+      %th{:id => "title_header",:class =>("hilite" if session[:sorted_by]=="title")}= link_to "Movie Title", movies_path(:order => "title")
       %th Rating
-      %th{:class => ("hilite" if @id == 'release_date')} 
-        %a#release_date_header{:href => movies_path + '/sort/release_date'} Release Date
+      %th{:id => "release_date_header",:class =>("hilite" if session[:sorted_by]=="release_date")}=link_to "Release Date", movies_path(:order => "release_date")
       %th More Info
   %tbody
     - @movies.each do |movie|
