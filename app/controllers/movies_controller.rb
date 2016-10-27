@@ -1,5 +1,9 @@
 class MoviesController < ApplicationController
 
+  def movie_params
+    params.require(:movie).permit(:title, :rating, :description, :release_date)
+  end
+
   def show
     id = params[:id] # retrieve movie ID from URI route
     @movie = Movie.find(id) # look up movie by unique ID
@@ -7,21 +11,51 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @all_ratings=Movie.ratings
-    session[:ratings] = if params[:ratings].respond_to?(:keys)
-        params[:ratings].keys
-      else
-        if session[:ratings].nil? 
-          @all_ratings
-        else
-          session[:ratings] 
-        end
+    # persist sort by column
+    @id = params['sortby']
+    session[:id] = @id if @id
+    @id = session[:id] if session[:id]
+    
+    # persist ratings (unless all unchecked)
+    @ratings = params['ratings'] 
+    @ratings = {} if params['reset'] and !params['ratings']
+    session[:ratings] = @ratings if @ratings 
+    @ratings = session[:ratings] if session[:ratings]
+    
+    # filter movies by rating
+    @movies = Movie.filter_ratings @ratings
+    
+    # predefine ratings
+    @all_ratings = ['G','PG','PG-13','R']
+    
+    # redirect to be restful
+    if params['sortby'] != session[:id]
+      redirect_to movies_path(:sortby => session[:id])
+      return
     end
     
-    if params[:order]
-      session[:sorted_by]=params[:order] 
+    
+    @ratings = {"G"=>true, "PG"=>true, "PG-13"=>true, "R"=>true} if @ratings and @ratings.length == 0
+    @ratings = {"G"=>true, "PG"=>true, "PG-13"=>true, "R"=>true} unless @ratings 
+    
+
+    if @ratings.length > 0
+      if params['ratings'] != session[:ratings]
+        redirect_to movies_path(:sortby => session[:id], :ratings => @ratings)
+        return
+      end
     end
-    @movies = Movie.movies(session[:sorted_by],session[:ratings])
+    
+    # sort movies if sortby param is present
+    if @id
+      @movies = @movies.sort do |a, b|
+        a[@id.to_sym] <=> b[@id.to_sym]
+      end
+    end
+  end
+
+  def new
+    # default: render 'new' template
   end
 
   def create

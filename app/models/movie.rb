@@ -1,11 +1,10 @@
 class Movie < ActiveRecord::Base
-    def Movie.ratings
-        Movie.select(:rating).distinct.order(:rating).collect do |movie|
-            movie.rating            
-        end
-    end
-    
-    def Movie.movies(sorted_by,ratings)
-        Movie.where(rating: ratings).order(sorted_by)
+    def self.filter_ratings ratings
+       return all unless ratings and ratings.length > 0
+       movies = []
+       ratings.each do |rating|
+           movies += where({ rating: rating[0] }) 
+       end
+       return movies
     end
 end
